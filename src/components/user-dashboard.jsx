@@ -25,7 +25,7 @@ export function UserDashboard() {
           axios.post(`${BackendURL}/add-task`, appointment)
                 .then(() => {
                     alert("Task added successfully ...");
-                    window.location.reload();
+                    // window.location.reload();
                 })
         }
     });
@@ -56,7 +56,7 @@ export function UserDashboard() {
             axios.put(`${BackendURL}/edit-task/${appointments.Appointment_Id}`,appointments)
                 .then(() => {
                     alert('updated Successfully ...');
-                    window.location.reload();
+                    // window.location.reload();
                 });
 
         },
@@ -84,7 +84,7 @@ export function UserDashboard() {
     function handleRemoveClick(id) {
         axios.delete(`${BackendURL}/remove-task/${id}`).then(() => {
             alert('deleted successfully ...');
-            window.location.reload();
+            // window.location.reload();
         });
     }
 
