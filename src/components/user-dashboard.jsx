@@ -22,18 +22,27 @@ export function UserDashboard() {
             UserId: cookies['userid']
         },
         onSubmit: appointment => {
-          axios.post(`${BackendURL}/add-task`, appointment)
+            axios.post(`${BackendURL}/add-task`, appointment)
                 .then(() => {
                     alert("Task added successfully ...");
-                    // window.location.reload();
+
+                    // Get latest data from backend
+                    LoadAppointments();
+
+
+                    // Optional: clear form
+                    formik.resetForm();
                 })
+                .catch(error => {
+                    console.error("Error adding task:", error);
+                });
         }
     });
 
 
     const editformik = useFormik({
-       
-    //    Method - 1
+
+        //    Method - 1
         // initialValues: {
         //     Appointment_Id: 0,
         //     Title: '',
@@ -43,22 +52,29 @@ export function UserDashboard() {
         // },
 
         // method 2 
-          initialValues: {
-        Appointment_Id: editAppointments?.Appointment_Id || 0,
-        Title: editAppointments?.Title || '',
-        Description: editAppointments?.Description || '',
-        Date: editAppointments?.Date || '',
-        UserId: cookies?.userid || ''
-          },
-         enableReinitialize: true,
-        
-        onSubmit: (appointments) => {
-            axios.put(`${BackendURL}/edit-task/${appointments.Appointment_Id}`,appointments)
-                .then(() => {
-                    alert('updated Successfully ...');
-                    // window.location.reload();
-                });
+        initialValues: {
+            Appointment_Id: editAppointments?.Appointment_Id || 0,
+            Title: editAppointments?.Title || '',
+            Description: editAppointments?.Description || '',
+            Date: editAppointments?.Date || '',
+            UserId: cookies?.userid || ''
+        },
+        enableReinitialize: true,
 
+        onSubmit: (appointment) => {
+            axios.put(
+                `${BackendURL}/edit-task/${appointment.Appointment_Id}`,
+                appointment
+            )
+                .then(() => {
+                    alert('Updated Successfully ...');
+
+                    // Get latest data from backend
+                    LoadAppointments();
+                })
+                .catch(error => {
+                    console.error("Error updating task:", error);
+                });
         },
 
     });
@@ -70,6 +86,9 @@ export function UserDashboard() {
             .then(response => {
                 setAppointments(response.data);
             })
+            .catch(error => {
+                console.error("Error loading appointments:", error);
+            });
     }
 
     useEffect(() => {
@@ -82,10 +101,16 @@ export function UserDashboard() {
     }
 
     function handleRemoveClick(id) {
-        axios.delete(`${BackendURL}/remove-task/${id}`).then(() => {
-            alert('deleted successfully ...');
-            // window.location.reload();
-        });
+        axios.delete(`${BackendURL}/remove-task/${id}`)
+            .then(() => {
+                alert('Deleted successfully ...');
+
+                // Get latest data from backend
+                LoadAppointments();
+            })
+            .catch(error => {
+                console.error("Error deleting task:", error);
+            });
     }
 
     function handleEditClick(id) {
@@ -105,7 +130,7 @@ export function UserDashboard() {
 
                 // Method -2  To enable Editing 
                 setEditAppointments(response.data[0]);
-               
+
             })
 
     }
@@ -152,8 +177,9 @@ export function UserDashboard() {
                 <div className="mt-4" >
                     {
                         Appointments.map(appointment =>
-                            <div className="alert alert-success alert-dismissible">
-                                <button onClick={() => handleRemoveClick(appointment.Appointment_Id)} className="btn btn-close" data-bs-dismiss="alert"></button>
+                            <div key={appointment.Appointment_Id}
+                            className="alert alert-success alert-dismissible">
+                                <button onClick={() => handleRemoveClick(appointment.Appointment_Id)} className="btn btn-close" ></button>
                                 <h2 className="alert-title">{appointment.Title}</h2>
                                 <p className="alert-text">{appointment.Description}</p>
                                 <p>
@@ -163,30 +189,30 @@ export function UserDashboard() {
                                 <div className="modal modal-fade" id="EditTask">
                                     <div className="modal-dialog">
                                         <div className="modal-content">
-                                           <form onSubmit={editformik.handleSubmit}>
-                                             <div className="modal-header">
-                                                <h2>Edit Task</h2>
-                                                <buttton  type="button" data-bs-dismiss="modal" className="btn btn-close  " style={{ position: 'absolute', top: '10px', right:'10px' }}></buttton>
-                                            </div>
+                                            <form onSubmit={editformik.handleSubmit}>
+                                                <div className="modal-header">
+                                                    <h2>Edit Task</h2>
+                                                    <buttton type="button" data-bs-dismiss="modal" className="btn btn-close  " style={{ position: 'absolute', top: '10px', right: '10px' }}></buttton>
+                                                </div>
 
-                                            <div className="modal-body">
-                                                <dl>
-                                                    <dt>Appointment</dt>
-                                                    <dd><input type="number" onChange={editformik.handleChange} className="form-control" name="Appointment_Id" value={editformik.values.Appointment_Id} /></dd>
-                                                    <dt>Title</dt>
-                                                    <dd><input type="text" onChange={editformik.handleChange} className="form-control" name="Title" value={editformik.values.Title} /></dd>
-                                                    <dt>Description</dt>
-                                                    <dd>
-                                                        <textarea onChange={editformik.handleChange}  name="Description" value={editformik.values.Description} className="form-control"></textarea>
-                                                    </dd>
-                                                </dl>
-                                            </div>
-                                            <div className="modal-footer">
-                                                <button data-bs-dismiss='modal' type="submit" className="btn btn-success bi bi-floppy-fill">
-                                                    &nbsp; Update
-                                                </button>
-                                            </div>
-                                           </form>
+                                                <div className="modal-body">
+                                                    <dl>
+                                                        <dt>Appointment</dt>
+                                                        <dd><input type="number" onChange={editformik.handleChange} className="form-control" name="Appointment_Id" value={editformik.values.Appointment_Id} /></dd>
+                                                        <dt>Title</dt>
+                                                        <dd><input type="text" onChange={editformik.handleChange} className="form-control" name="Title" value={editformik.values.Title} /></dd>
+                                                        <dt>Description</dt>
+                                                        <dd>
+                                                            <textarea onChange={editformik.handleChange} name="Description" value={editformik.values.Description} className="form-control"></textarea>
+                                                        </dd>
+                                                    </dl>
+                                                </div>
+                                                <div className="modal-footer">
+                                                    <button data-bs-dismiss='modal' type="submit" className="btn btn-success bi bi-floppy-fill">
+                                                        &nbsp; Update
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
